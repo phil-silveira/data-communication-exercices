@@ -27,13 +27,17 @@ def bin2str(bitStream):
     return ''.join(message)
 
 
+def encodeNRZ(message, HIGH=1):
+    return str2bin(message).replace('1', str(HIGH))
+    
 
+def decodeNRZ(message, HIGH=1):
+    return bin2str(message.replace(str(HIGH),'1'))
 
-# tenting
 
 message = 'UERGS'
-encMessage = str2bin(message)
-decMessage = bin2str(encMessage)
 
-print(encMessage)
-print(decMessage)
+bitStream = encodeNRZ(message, HIGH=5)
+
+print(bitStream)
+print(decodeNRZ(bitStream, HIGH=5))
