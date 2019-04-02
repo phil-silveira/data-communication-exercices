@@ -1,1 +1,2 @@
-# :satellite: Data communication algorithms implentation
+# :satellite: Data communication
+Implementation of some algorithms
