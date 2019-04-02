@@ -1,5 +1,3 @@
-import numpy as np
-
 # str2bin: convert a string to a bit stream
 #
 # description:
@@ -25,6 +23,7 @@ def bin2str(bitStream):
         message += chr(int(''.join(map(str, bitStream[b:b+8])), 2))
     return message
 
+
 # encodeNRZ: bit stream when bit = 1 convert
 # to HIGH and when bit = 0 keeps 0
 #
@@ -37,6 +36,7 @@ def encodeNRZ(message, HIGH=1):
 # 
 def decodeNRZ(bitStream, HIGH=1):
     return bin2str([int(x / HIGH) for x in bitStream])
+
 
 # encodeNRZ_L: bit stream when bit = 1 convert
 # to LOW and when bit = 0 convert to HIGH
@@ -51,6 +51,7 @@ def encodeNRZ_L(message, HIGH=1, LOW=-1):
 def decodeNRZ_L(bitStream, HIGH=1, LOW=-1):
     return bin2str([ '0' if x == HIGH else '1' for x in bitStream])
 
+
 # encodeNRZ_I: bit stream when bit = 1 the 
 # output is toggled and when bit = 0 output
 # is keeped
@@ -64,7 +65,6 @@ def encodeNRZ_I(message, HIGH=1, LOW=-1):
         encodedBitStream.append((LOW if encodedBitStream[i-1] == HIGH else HIGH) if bitStream[i] == LOW else encodedBitStream[i-1])
 
     return encodedBitStream
-
 
 # decodeNRZ_I: bit stream when bit toggle the 
 # output is 1 and when bit keeps output
@@ -105,10 +105,99 @@ def decodeAMI(bitStream, HIGH=1):
 
     return decodeNRZ(bitStream, HIGH=HIGH)
 
+# encode2B1Q: the message is encoded to a bitstream, after,
+# all data are encoded according a logic that transform 
+# each couple of bits is a code according this system:
+# when 10 => HIGH2, 11 => HIGH1, 01 => LOW1, 00 => LOW2,
+# 
+def encode2B1Q(message, HIGH1=1, HIGH2=2, LOW1=-1, LOW2=-2):
+    bitStream = str2bin(message)
+
+    encodedBitStream = []
+    for i in range(0, len(bitStream),2):
+        if bitStream[i:i+2] == ['1','0']:
+            encodedBitStream.append(HIGH2)
+        elif bitStream[i:i+2] == ['1','1']:
+            encodedBitStream.append(HIGH1)
+        elif bitStream[i:i+2] == ['0','1']:
+            encodedBitStream.append(LOW1)
+        elif bitStream[i:i+2] == ['0','0']:
+            encodedBitStream.append(LOW2)
+
+    return  encodedBitStream
+
+# decode2B1Q: the message is decoded from a bitstream
+# encoded following this system:
+# when 10 => HIGH2, 11 => HIGH1, 01 => LOW1, 00 => LOW2,
+# after this bitStream is decoded to the origina message
+# 
+def decode2B1Q(encodedBitStream, HIGH1=1, HIGH2=2, LOW1=-1, LOW2=-2):
+    bitStream = []
+    for x in encodedBitStream:
+        if   x == HIGH2:
+            bitStream.extend(['1','0'])
+        elif x == HIGH1:
+            bitStream.extend(['1','1'])
+        elif x == LOW1:
+            bitStream.extend(['0','1'])
+        elif x == LOW2:
+            bitStream.extend(['0','0'])
+    
+    message = bin2str(bitStream)
+    return message
+
+# encodeMLT_3: code message following a
+# logic that encode bitstream. if input bit
+# is 0, keeps the previus output value and 
+# if input bit is 1, output change according this logic: 
+# 0 => HIGH, HIGH => 0, 0 => LOW, LOW => 0
+# we can think this. like a circular queue that contains
+# values [0, HIGH, 0, LOW]
+#
+def encodeMLT_3(message, HIGH=1, LOW=-1):
+    bitStream = str2bin(message)
+    states = [0, HIGH, 0, LOW]
+    stateCounter = 0
+    
+    encodedBitStream = []
+    for x in bitStream:
+        if x == '1':
+            stateCounter += 1
+
+        encodedBitStream.append(states[stateCounter % len(states)])
+
+    return encodedBitStream
+
+# decodeMLT_3: decode a bitstream following
+# this logic: if bit
+# is 0, keeps the previus output value and 
+# if input bit is 1, output change according this logic: 
+# 0 => HIGH, HIGH => 0, 0 => LOW, LOW => 0
+# we can think this. like a circular queue that contains
+# values [0, HIGH, 0, LOW]
+#
+def decodeMLT_3(encodedBitStream, HIGH=1, LOW=-1):
+    bitStream = []
+    bitStream.append(encodedBitStream[0])
+
+    for i in range(1, len(encodedBitStream)):
+        if encodedBitStream[i-1] != encodedBitStream[i]:
+            bitStream.append('1')
+        else:  
+            bitStream.append('0')
+
+    message = bin2str(bitStream)
+    return message
 
 
+# testing algorithms
 
 message = 'UERGS'
-
-print(encodeAMI(message))
+print(message)
+print(decodeNRZ(encodeNRZ(message)))
+print(decodeNRZ_L(encodeNRZ_L(message)))
+print(decodeNRZ_I(encodeNRZ_I(message)))
 print(decodeAMI(encodeAMI(message)))
+print(decode2B1Q(encode2B1Q(message)))
+print(decodeMLT_3(encodeMLT_3(message)))
+
