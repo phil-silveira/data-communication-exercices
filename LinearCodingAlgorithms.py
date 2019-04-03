@@ -1,23 +1,23 @@
-# str2bin: convert a string to a bit stream
+# _str2bin: convert a string to a bit stream
 #
 # description:
 #   a char is represented by a byte, using ascii's representation.
 #   each char is converted to a byte in a bit array
 #
-def str2bin(message):
+def _str2bin(message):
     bitStream = []
     for x in message:
         bitStream.extend(list(format(ord(x),'08b')))
     return  bitStream
 
-# bin2str: convert a bit stream to a string
+# _bin2str: convert a bit stream to a string
 #
 # description:
 #   the bit stream content is grouped in bytes
 #   after these bytes are encoded to chars in
 #   a single string
 #
-def bin2str(bitStream):
+def _bin2str(bitStream):
     message = ''
     for b in range(0, len(bitStream) -1, 8):
         message += chr(int(''.join(map(str, bitStream[b:b+8])), 2))
@@ -28,28 +28,28 @@ def bin2str(bitStream):
 # to HIGH and when bit = 0 keeps 0
 #
 def encodeNRZ(message, HIGH=1):
-    return [int(x) * HIGH for x in str2bin(message)]
+    return [int(x) * HIGH for x in _str2bin(message)]
 
 # decodeNRZ: bit stream when bit = HIGH convert
 # to 1 and when bit = 0 keeps 0 after build the 
 # string
 # 
 def decodeNRZ(bitStream, HIGH=1):
-    return bin2str([int(x / HIGH) for x in bitStream])
+    return _bin2str([int(x / HIGH) for x in bitStream])
 
 
 # encodeNRZ_L: bit stream when bit = 1 convert
 # to LOW and when bit = 0 convert to HIGH
 #
 def encodeNRZ_L(message, HIGH=1, LOW=-1):
-    return [ HIGH if x == '0' else LOW for x in str2bin(message)]
+    return [ HIGH if x == '0' else LOW for x in _str2bin(message)]
 
 # decodeNRZ_L: bit stream when bit = LOW convert
 # to 1 and when bit = HIGH convert to 0 after 
 # build the string
 # 
 def decodeNRZ_L(bitStream, HIGH=1, LOW=-1):
-    return bin2str([ '0' if x == HIGH else '1' for x in bitStream])
+    return _bin2str([ '0' if x == HIGH else '1' for x in bitStream])
 
 
 # encodeNRZ_I: bit stream when bit = 1 the 
@@ -111,7 +111,7 @@ def decodeAMI(bitStream, HIGH=1):
 # when 10 => HIGH2, 11 => HIGH1, 01 => LOW1, 00 => LOW2,
 # 
 def encode2B1Q(message, HIGH1=1, HIGH2=2, LOW1=-1, LOW2=-2):
-    bitStream = str2bin(message)
+    bitStream = _str2bin(message)
 
     encodedBitStream = []
     for i in range(0, len(bitStream),2):
@@ -143,7 +143,7 @@ def decode2B1Q(encodedBitStream, HIGH1=1, HIGH2=2, LOW1=-1, LOW2=-2):
         elif x == LOW2:
             bitStream.extend(['0','0'])
     
-    message = bin2str(bitStream)
+    message = _bin2str(bitStream)
     return message
 
 # encodeMLT_3: code message following a
@@ -155,7 +155,7 @@ def decode2B1Q(encodedBitStream, HIGH1=1, HIGH2=2, LOW1=-1, LOW2=-2):
 # values [0, HIGH, 0, LOW]
 #
 def encodeMLT_3(message, HIGH=1, LOW=-1):
-    bitStream = str2bin(message)
+    bitStream = _str2bin(message)
     states = [0, HIGH, 0, LOW]
     stateCounter = 0
     
@@ -186,18 +186,6 @@ def decodeMLT_3(encodedBitStream, HIGH=1, LOW=-1):
         else:  
             bitStream.append('0')
 
-    message = bin2str(bitStream)
+    message = _bin2str(bitStream)
     return message
-
-
-# testing algorithms
-
-message = 'UERGS'
-print(message)
-print(decodeNRZ(encodeNRZ(message)))
-print(decodeNRZ_L(encodeNRZ_L(message)))
-print(decodeNRZ_I(encodeNRZ_I(message)))
-print(decodeAMI(encodeAMI(message)))
-print(decode2B1Q(encode2B1Q(message)))
-print(decodeMLT_3(encodeMLT_3(message)))
 
